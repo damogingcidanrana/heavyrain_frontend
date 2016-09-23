@@ -93,8 +93,12 @@ var test;
 
 
 $(document).ready(function(){
-  addFigure(4); // добавим квадрат
-  addFigure(4);
+  //addFigure(4); // добавим квадрат
+  //addFigure(roundRand(3,7));
+  
+  for (var t=0;t<20;t++) {
+    addFigure(roundRand(3,7));
+  }
   // var namespace = '/game';
   // var socket = io.connect('http://rain.cancode.ru' + namespace);
   // socket.on('start_game', function(data) {
