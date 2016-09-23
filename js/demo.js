@@ -1,6 +1,5 @@
 // module aliases
 var Engine = Matter.Engine,
-    Render = Matter.Render,
     World = Matter.World,
     Bodies = Matter.Bodies,
     MouseConstraint = Matter.MouseConstraint,
@@ -11,20 +10,6 @@ var Engine = Matter.Engine,
 // create an engine
 var engine = Engine.create();
 
-// create a renderer
-var render = Render.create({
-    element: document.body,
-    engine: engine,
-    options: {
-      // pixelRatio: 'auto',
-      width: 800,
-      height: 370,
-      background: '#ffffff',
-      wireframeBackground: '#ffffff',
-      wireframes: false
-    }
-});
-
 // create a ground
 var ground = Bodies.rectangle(400, 350, 700, 5, { isStatic: true });
 var wall_left = Bodies.rectangle(50, 210, 5, 300, { isStatic: true });
@@ -33,15 +18,12 @@ World.add(engine.world, [ground, wall_left, wall_right]);
 
 // bind to mouse
 var mouseconstraint = MouseConstraint.create(engine, {
-  element: render.canvas
+  element: document.getElementById("container")
 });
 World.add(engine.world, [mouseconstraint]);
 
 // run the engine
 Engine.run(engine);
-
-// run the renderer
-Render.run(render);
 
 var colors = ["ff9b25", "ffcf00", "16cc90", "3cd1e6", "a74fe4"];
 
@@ -80,12 +62,8 @@ function addFigure(angles) {
       roundRand(100,700),
       roundRand(100,200),
       angles,
-      50,
-      { render: {
-        lineWidth: 2,
-        strokeStyle: "#"+darken(color),
-        fillStyle: "#"+color }}
-      ));
+      50
+    ));
 }
 var k =0;
 var figures={};
@@ -93,9 +71,11 @@ var test;
 
 
 $(document).ready(function(){
+  $("#container")[0].width = $("#container").width();
+  $("#container")[0].height = $("#container").height();
   //addFigure(4); // добавим квадрат
   //addFigure(roundRand(3,7));
-  
+
   for (var t=0;t<20;t++) {
     addFigure(roundRand(3,7));
   }
@@ -113,7 +93,7 @@ $(document).ready(function(){
 function draw_figure(figure_id,angles) {
   var figure_attr='';
   if (figures[figure_id]) {
-    $.each(angles, function(index, value) { 
+    $.each(angles, function(index, value) {
       if (index == 0) {
         figure_attr += "M "+ angles[index].x+' '+angles[index].y+' L';
       }
