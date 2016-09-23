@@ -3,12 +3,35 @@
   <head>
     <meta charset="utf-8">
     <title>Testing Matter.js</title>
-    <script src="/js/matter.js"></script>
+    <script src="js/matter.js"></script>
     <script src="https://code.jquery.com/jquery-3.1.0.slim.min.js"></script>
     <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+    <script src="js/anychart.min.js"></script>
+    <style>
+      body,html {
+        min-height: 100%;
+        width: 100%;
+        box-sizing: border-box;
+        margin:0;
+        padding:0;
+      }
+      #container {
+        height: 370px;
+        width: 800px;
+        box-sizing: border-box;
+        margin:0;
+        padding:0;
+      }
+      canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        opacity: 0
+      }
+    </style>
   </head>
   <body>
-
+    <div id="container"></div>
   </body>
-  <script src="/js/demo.js"></script>
+  <script src="js/demo.js"></script>
 </html>

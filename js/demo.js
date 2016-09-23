@@ -87,21 +87,14 @@ function addFigure(angles) {
         fillStyle: "#"+color }}
       ));
 }
+var k =0;
+var figures={};
+var test;
 
-(function render() {
-  var bodies = Composite.allBodies(engine.world);
-
-  window.requestAnimationFrame(render); // я бы перенёс это в конец, а может и нет
-
-  for (var i = 0; i < bodies.length; i += 1) { // перебор всех объектов в сцене
-    var object_id = bodies[i].vertices.id; // id объекта
-    var vertices = bodies[i].vertices; // вертексы объкта вида [{x: 243, y: 123}, {x: 141, y: 232}, {x: 412, y: 41}, {x: 232, y: 41}]
-  }
-
-})();
 
 $(document).ready(function(){
   addFigure(4); // добавим квадрат
+  addFigure(4);
   // var namespace = '/game';
   // var socket = io.connect('http://rain.cancode.ru' + namespace);
   // socket.on('start_game', function(data) {
@@ -111,4 +104,56 @@ $(document).ready(function(){
   //     addFigure(figure.vertex);
   //   });
   // });
+});
+
+function draw_figure(figure_id,angles) {
+  var figure_attr='';
+  if (figures[figure_id]) {
+    $.each(angles, function(index, value) { 
+      if (index == 0) {
+        figure_attr += "M "+ angles[index].x+' '+angles[index].y+' L';
+      }
+      else if (index == angles.length-1) {
+        figure_attr += ' '+angles[index].x+' '+angles[index].y+' Z';
+      }
+      else {
+        figure_attr += ' '+angles[index].x+' '+angles[index].y;
+      }
+    });
+    if (figures[figure_id].attr('d')==figure_attr) return false;
+    figures[figure_id].attr('d',figure_attr);
+  }
+  else {
+    var linePath = acgraph.path();
+    linePath.parent(stage);
+    $.each(angles, function(index, value) {
+      if (index == 0) {
+        linePath.moveTo(angles[index].x, angles[index].y);
+      }else {
+        linePath.lineTo(angles[index].x, angles[index].y);
+      }
+    });
+    linePath.close();
+    figures[figure_id] = linePath;
+  }
+}
+
+anychart.onDocumentReady(function(){
+
+  stage = anychart.graphics.create('container');
+
+  (function render() {
+    var bodies = Composite.allBodies(engine.world);
+
+    window.requestAnimationFrame(render); // я бы перенёс это в конец, а может и нет
+
+    for (var bid in bodies) { // перебор всех объектов в сцене
+      var body = bodies[bid];
+      var object_id = body.id; // id объекта
+      var vertices = body.vertices; // вертексы объкта вида [{x: 243, y: 123}, {x: 141, y: 232}, {x: 412, y: 41}, {x: 232, y: 41}]
+      draw_figure(object_id,vertices);
+    }
+
+  })();
+
 });
