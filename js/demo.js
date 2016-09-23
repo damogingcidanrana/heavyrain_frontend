@@ -133,6 +133,9 @@ function draw_figure(figure_id,angles) {
         linePath.lineTo(angles[index].x, angles[index].y);
       }
     });
+    var color = pickRandom(colors);
+    linePath.fill('#'+color);
+    linePath.stroke("#"+darken(color))
     linePath.close();
     figures[figure_id] = linePath;
   }
