@@ -5,7 +5,8 @@ var Engine = Matter.Engine,
     Bodies = Matter.Bodies,
     MouseConstraint = Matter.MouseConstraint,
     Events = Matter.Events,
-    Body = Matter.Body;
+    Body = Matter.Body,
+    Composite = Matter.Composite;
 
 // create an engine
 var engine = Engine.create();
@@ -16,6 +17,8 @@ var render = Render.create({
     engine: engine,
     options: {
       // pixelRatio: 'auto',
+      width: 800,
+      height: 370,
       background: '#ffffff',
       wireframeBackground: '#ffffff',
       wireframes: false
@@ -23,9 +26,9 @@ var render = Render.create({
 });
 
 // create a ground
-var ground = Bodies.rectangle(400, 550, 700, 5, { isStatic: true });
-var wall_left = Bodies.rectangle(50, 300, 5, 500, { isStatic: true });
-var wall_right = Bodies.rectangle(750, 300, 5, 500, { isStatic: true });
+var ground = Bodies.rectangle(400, 350, 700, 5, { isStatic: true });
+var wall_left = Bodies.rectangle(50, 210, 5, 300, { isStatic: true });
+var wall_right = Bodies.rectangle(750, 210, 5, 300, { isStatic: true });
 World.add(engine.world, [ground, wall_left, wall_right]);
 
 // bind to mouse
@@ -85,16 +88,27 @@ function addFigure(angles) {
       ));
 }
 
+(function render() {
+  var bodies = Composite.allBodies(engine.world);
 
+  window.requestAnimationFrame(render); // я бы перенёс это в конец, а может и нет
+
+  for (var i = 0; i < bodies.length; i += 1) { // перебор всех объектов в сцене
+    var object_id = bodies[i].vertices.id; // id объекта
+    var vertices = bodies[i].vertices; // вертексы объкта вида [{x: 243, y: 123}, {x: 141, y: 232}, {x: 412, y: 41}, {x: 232, y: 41}]
+  }
+
+})();
 
 $(document).ready(function(){
-  var namespace = '/game';
-  var socket = io.connect('http://rain.cancode.ru' + namespace);
-  socket.on('start_game', function(data) {
-    var figures = data.data.figures;
-    figures.forEach(function(figure){
-      // console.log(figure);
-      addFigure(figure.vertex);
-    });
-  });
+  addFigure(4); // добавим квадрат
+  // var namespace = '/game';
+  // var socket = io.connect('http://rain.cancode.ru' + namespace);
+  // socket.on('start_game', function(data) {
+  //   var figures = data.data.figures;
+  //   figures.forEach(function(figure){
+  //     // console.log(figure);
+  //     addFigure(figure.vertex);
+  //   });
+  // });
 });
