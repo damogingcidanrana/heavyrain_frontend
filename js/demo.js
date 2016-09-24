@@ -111,7 +111,7 @@ $(document).ready(function(){
 
   })();
 
-  for (var t=0;t<20;t++) {
+  for (var t=0;t<3;t++) {
     addFigure(roundRand(3,7));
   }
   // for (var t=0;t<5;t++) {
@@ -150,22 +150,25 @@ function draw_figure(figure_id, angles) {
     figure_attr = steps.join(" ");
 
     if (figures[figure_id]['main'].attr('d') == figure_attr) return false;
-    figures[figure_id]['main'].attr('d', figure_attr);
     draw_3d(figure_id, angles);
+    figures[figure_id]['main'].attr('d', figure_attr);
+    figures[figure_id]['main'].zIndex(Math.ceil(Math.abs(figures[figure_id]['main'].getAbsoluteX()-center.x)+Math.abs(figures[figure_id]['main'].getAbsoluteY()-center.y)));
   } else {
     figures[figure_id] = {};
+    var color = pickRandom(colors);
+    draw_3d(figure_id,angles,color);
     var linePath = acgraph.path();
     linePath.parent(stage);
     $.each(angles, function(index, value) {
       if (index == 0) { linePath.moveTo(value.x, value.y); }
                  else { linePath.lineTo(value.x, value.y); }
     });
-    var color = pickRandom(colors);
     linePath.fill('#'+color);
     linePath.stroke("#"+darken(color));
     linePath.close();
+    linePath.zIndex(Math.ceil(Math.abs(linePath.getAbsoluteX()-center.x)+Math.abs(linePath.getAbsoluteY()-center.y)));
     figures[figure_id]['main'] = linePath;
-    draw_3d(figure_id,angles);
+ 
   }
 }
 
@@ -175,7 +178,7 @@ function aim(point) {
 function aimAxis(point, axis) {
   return (point[axis]+(center[axis]-point[axis])/depth).toFixed(1);
 }
-function draw_3d(figure_id, angles) {
+function draw_3d(figure_id, angles,color) {
   var angles = Object.assign({},angles);
   angles[Object.keys(angles).length]=angles[0];
   if ('0' in figures[figure_id]) {
@@ -200,6 +203,7 @@ function draw_3d(figure_id, angles) {
         .lineTo(aimAxis(angles[n+1], "x"), aimAxis(angles[n+1], "y"))
         .lineTo(angles[n+1].x.toFixed(1), angles[n+1].y.toFixed(1));
       linePath3d.close();
+      linePath3d.fill('#'+darken(color)).stroke('none');
       figures[figure_id][n] = linePath3d;
     }
   }
