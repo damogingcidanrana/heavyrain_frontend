@@ -72,6 +72,9 @@ function addFigure(angles, purpose, uid) {
       Body.set(body, "isStatic", true);
       Body.set(body, "isSensor", true);
     }
+    if (purpose == "body") {
+      bodies[uid] = body;
+    }
     var state = $("<p></p>").addClass(purpose).text(purpose + " " + uid).attr("data-uid", uid);
     $("#states").append(state);
   }
@@ -88,6 +91,7 @@ var lastCalledTime;
 var fps;
 var average_fps = 0;
 var socket;
+var bodies = {};
 
 $(document).ready(function(){
   $("#container")[0].width = $("#container").width();
@@ -151,8 +155,7 @@ $(document).ready(function(){
 
   var namespace = '/game';
   console.log("CONNECT ATTEMPT");
-  socket = io.connect('http://rain.cancode.ru' + namespace);
-  // socket = io.connect('http://127.0.0.1:4093' + namespace);
+  //socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
   var started = false;
   socket.on("connect", function(){
     if (!started) {
@@ -163,11 +166,11 @@ $(document).ready(function(){
   socket.on("disconnect", function(){
     console.log("disconnected");
   });
-  socket.on("put_success", function(message){
-    console.log("success:", message.data);
+  socket.on("put_success", function(){
+    console.log("success");
   });
-  socket.on("put_failed", function(message){
-    console.log("failed:", message.data);
+  socket.on("put_failed", function(){
+    console.log("failed");
   });
   //
   socket.on('start_game', function(data) {
@@ -179,6 +182,16 @@ $(document).ready(function(){
     figures.forEach(function(figure){
       addFigure(figure.vertex, "body", figure.uid);
     });
+  });
+
+  socket.on("new_figure", function(data) {
+    var figure = data.data.figure;
+    addFigure(figure.vertex, "body", figure.uid);
+  });
+
+  socket.on("remove_figure", function(uid) {
+    removeFigureFromRenderer(bodies[uid].id);
+    Composite.removeBody(engine.world, bodies[uid]);
   });
 
   // var figures = data.data.figures;
@@ -260,6 +273,12 @@ function drawbody(figure_id, angles) {
   }
   acgraph.useAbsoluteReferences(true);
   acgraph.updateReferences();
+}
+
+function removeFigureFromRenderer(id) {
+  $.each(figures[id], function(index, value) {
+    value.remove();
+  });
 }
 
 function drawwall(figure_id, angles) {
