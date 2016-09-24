@@ -144,7 +144,6 @@ function draw_3d(figure_id,angles) {
     }
   } else {
      for (var n=0;n<Object.keys(angles).length-1;n++) {
-      console.log('ggh');
       var linePath3d = acgraph.path();
       linePath3d.parent(stage);
       linePath3d.moveTo(angles[n].x, angles[n].y)
