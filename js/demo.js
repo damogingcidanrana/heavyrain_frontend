@@ -155,7 +155,7 @@ $(document).ready(function(){
 
   var namespace = '/game';
   console.log("CONNECT ATTEMPT");
-  socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
+  //socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
   var started = false;
   socket.on("connect", function(){
     if (!started) {
@@ -270,8 +270,8 @@ function drawbody(figure_id, angles) {
 
 function removeFigureFromRenderer(id) {
   $.each(figures[id], function(index, value) {
-      value.remove();
-  };
+    value.remove();
+  });
 }
 
 function drawwall(figure_id, angles) {
