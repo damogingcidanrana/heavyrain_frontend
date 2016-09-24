@@ -42,11 +42,49 @@
       #fps::before {
         content: "FPS: ";
       }
+      #states {
+        font-family: monospace;
+        padding: 15px;
+        font-size: 16px;
+      }
+      #states p {
+        margin: 0;
+      }
+      #states p.hole {
+        cursor: default;
+        pointer-events: none;
+      }
+      #states p.body, #states p.hole.active {
+        cursor: pointer;
+      }
+      #states p.body:hover {
+        color: #0094ff;
+      }
+      #states p.body:hover::after {
+        content: " PUT ->";
+      }
+      #states p.body.picked {
+        font-weight: bold;
+      }
+      #states.active p.hole {
+        pointer-events: all;
+      }
+      #states.active p.hole:hover {
+        color: #ff004c;
+        cursor: pointer;
+      }
+      #states.active p.hole:hover::after {
+        content: " <- PUT";
+      }
+      #states.active p.body {
+        pointer-events: none;
+      }
     </style>
   </head>
   <body>
     <div id="container" draggable="false"></div>
     <div id="fps"></div>
+    <div id="states"></div>
   </body>
   <script src="js/demo.js"></script>
 </html>
