@@ -63,7 +63,7 @@ function addFigure(angles) {
       roundRand(100,200),
       angles,
       50
-    ));
+      ));
 }
 var k =0;
 var figures={};
@@ -73,8 +73,20 @@ var test;
 $(document).ready(function(){
   $("#container")[0].width = $("#container").width();
   $("#container")[0].height = $("#container").height();
-  //addFigure(4); // добавим квадрат
-  //addFigure(roundRand(3,7));
+
+  stage = acgraph.create('container');
+
+  (function render() {
+    var bodies = Composite.allBodies(engine.world);
+    window.requestAnimationFrame(render); // я бы перенёс это в конец, а может и нет
+    for (var bid in bodies) { // перебор всех объектов в сцене
+      var body = bodies[bid];
+      var object_id = body.id; // id объекта
+      var vertices = body.vertices; // вертексы объкта вида [{x: 243, y: 123}, {x: 141, y: 232}, {x: 412, y: 41}, {x: 232, y: 41}]
+      draw_figure(object_id,vertices);
+    }
+
+  })();
 
   for (var t=0;t<20;t++) {
     addFigure(roundRand(3,7));
@@ -124,23 +136,3 @@ function draw_figure(figure_id,angles) {
     figures[figure_id] = linePath;
   }
 }
-
-anychart.onDocumentReady(function(){
-
-  stage = anychart.graphics.create('container');
-
-  (function render() {
-    var bodies = Composite.allBodies(engine.world);
-
-    window.requestAnimationFrame(render); // я бы перенёс это в конец, а может и нет
-
-    for (var bid in bodies) { // перебор всех объектов в сцене
-      var body = bodies[bid];
-      var object_id = body.id; // id объекта
-      var vertices = body.vertices; // вертексы объкта вида [{x: 243, y: 123}, {x: 141, y: 232}, {x: 412, y: 41}, {x: 232, y: 41}]
-      draw_figure(object_id,vertices);
-    }
-
-  })();
-
-});
