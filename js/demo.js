@@ -71,6 +71,7 @@ function addFigure(angles, purpose, uid) {
     if (purpose == "hole") {
       Body.set(body, "isStatic", true);
       Body.set(body, "isSensor", true);
+      holes.push(body);
     }
     if (purpose == "body") {
       bodies[uid] = body;
@@ -92,6 +93,32 @@ var fps;
 var average_fps = 0;
 var socket;
 var bodies = {};
+var holes = [];
+
+function throwBody(figure_uid, hole_uid) {
+  socket.emit('put', {
+      figure_uid: figure_uid,
+      hole_uid: hole_uid
+    }
+  );
+  $("#states p[data-uid='"+figure_uid+"']").remove();
+  Composite.removeBody(engine.world, bodies[figure_uid]);
+  if (figure_uid in bodies) {
+    removeFigureFromRenderer(bodies[figure_uid].id);
+  }
+}
+
+Events.on(mouseconstraint, "enddrag", function(event){
+  console.log(event.body.position);
+  holes.forEach(function(hole) {
+    var diff_x = Math.abs(aimAxis(event.body.position, "x") - hole.position.x);
+    var diff_y = Math.abs(aimAxis(event.body.position, "y") - hole.position.y);
+    // if (event.body.position)
+    if (diff_x < 30 && diff_y < 30 && event.body.vertices.length == hole.vertices.length) {
+      throwBody(event.body.uid, hole.uid);
+    }
+  });
+});
 
 $(document).ready(function(){
   $("#container")[0].width = $("#container").width();
@@ -100,8 +127,6 @@ $(document).ready(function(){
   stage = acgraph.create('container');
 
   (function render() {
-
-
     if(!lastCalledTime) {
        lastCalledTime = Date.now();
        fps = 0;
@@ -112,11 +137,6 @@ $(document).ready(function(){
       average_fps = average_fps + ((fps - average_fps)/10);
       $("#fps").text(Math.round(average_fps));
     }
-
-
-
-
-
     var bodies = Composite.allBodies(engine.world);
     window.requestAnimationFrame(render); // я бы перенёс это в конец, а может и нет
     for (var bid in bodies) { // перебор всех объектов в сцене
@@ -125,7 +145,6 @@ $(document).ready(function(){
       var vertices = body.vertices; // вертексы объкта вида [{x: 243, y: 123}, {x: 141, y: 232}, {x: 412, y: 41}, {x: 232, y: 41}]
       draw_figure(object_id,vertices,body.purpose);
     }
-
   })();
 
   // UI
@@ -270,8 +289,8 @@ function drawbody(figure_id, angles) {
 
 function removeFigureFromRenderer(id) {
   $.each(figures[id], function(index, value) {
-      value.remove();
-  };
+    value.remove();
+  });
 }
 
 function drawwall(figure_id, angles) {
