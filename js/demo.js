@@ -191,6 +191,7 @@ $(document).ready(function(){
   });
 
   socket.on("remove_figure", function(uid) {
+    removeFigureFunction(bodies[uid].id);
     Composite.removeBody(engine.world, bodies[uid]);
   });
 
