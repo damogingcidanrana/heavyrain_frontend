@@ -210,10 +210,10 @@ function draw_figure(figure_id, angles, purpose) {
   }
 }
 
-function DrawSingle(figure_id, angles, color, is3d) {
+function DrawSingle(figure_id, angles, color, is3d, z_index) {
   figures[figure_id] = {};
   if (is3d) {
-    draw_3d(figure_id,angles,color);
+    draw_3d(figure_id, angles, color, z_index);
   }
   var linePath = acgraph.path();
   linePath.parent(stage);
@@ -226,10 +226,17 @@ function DrawSingle(figure_id, angles, color, is3d) {
   linePath.close();
   figures[figure_id]['main'] = linePath;
   figures[figure_id]['main'].fill('#'+color);
+   figures[figure_id]['main'].zIndex(z_index);
 }
 
 function drawbody(figure_id, angles) {
   var figure_attr = '';
+  var k = (angles.length/2-1).toFixed();
+  var center_figure = {
+    x: (angles[0].x+angles[k].x)/2,
+    y: (angles[0].y+angles[k].y)/2
+  };
+  var z_index = -Math.ceil(Math.abs(center_figure.x-center.x)+Math.abs(center_figure.y-center.y));
   if (figure_id in figures && 'main' in figures[figure_id]) {
     var steps = [];
     steps.push("M");
@@ -241,14 +248,14 @@ function drawbody(figure_id, angles) {
     figure_attr = steps.join(" ");
 
     if (figures[figure_id]['main'].attr('d') == figure_attr) return false;
-    draw_3d(figure_id, angles);
+    draw_3d(figure_id, angles, color, z_index);
     figures[figure_id]['main'].attr('d', figure_attr);
-    figures[figure_id]['main'].zIndex(Math.ceil(Math.abs(angles[0].x+50-center.x)+Math.abs(angles[0].y+50-center.y)));
+    figures[figure_id]['main'].zIndex(-Math.ceil(Math.abs(center_figure.x-center.x)+Math.abs(center_figure.y-center.y)));
    // figures[figure_id]['main'].zIndex(Math.ceil(Math.abs(figures[figure_id]['main'].getAbsoluteX()-center.x)+Math.abs(figures[figure_id]['main'].getAbsoluteY()-center.y)));
   } else {
     var color = pickRandom(colors);
-    DrawSingle(figure_id, angles, color, true);
-    figures[figure_id]['main'].zIndex(Math.ceil(Math.abs(angles[0].x+50-center.x)+Math.abs(angles[0].y+50-center.y)));
+    DrawSingle(figure_id, angles, color, true, z_index);
+    figures[figure_id]['main'].zIndex(-Math.ceil(Math.abs(center_figure.x-center.x)+Math.abs(center_figure.y-center.y)));
     figures[figure_id]['main'].stroke("#"+darken(color));
   }
   acgraph.useAbsoluteReferences(true);
@@ -257,16 +264,15 @@ function drawbody(figure_id, angles) {
 
 function drawwall(figure_id, angles) {
   if (!(figure_id in figures && 'main' in figures[figure_id])) {
-    DrawSingle(figure_id, angles, 'ccc', true);
-    figures[figure_id]['main'].zIndex(1000);
+    DrawSingle(figure_id, angles, 'ccc', false,0);
+    draw_3d(figure_id, angles,'eee',-1000);
   }
 }
 
 function drawhole(figure_id, angles) {
   var figure_attr = '';
   if (!(figure_id in figures && 'main' in figures[figure_id])) {
-    DrawSingle(figure_id, angles, '000', false);
-    figures[figure_id]['main'].zIndex(-1);
+    DrawSingle(figure_id, angles, '000', false,-1000);
   }
 }
 
@@ -276,7 +282,12 @@ function aim(point) {
 function aimAxis(point, axis) {
   return (point[axis]+(center[axis]-point[axis])/depth).toFixed(1);
 }
-function draw_3d(figure_id, angles,color) {
+function draw_3d(figure_id, angles,color,z_index) {
+  var k = (angles.length/2-1).toFixed();
+  var center_figure = {
+    x: (angles[0].x+angles[k].x)/2,
+    y: (angles[0].y+angles[k].y)/2
+  };
   var angles = Object.assign({},angles);
   angles[Object.keys(angles).length]=angles[0];
   if ('0' in figures[figure_id]) {
@@ -291,6 +302,7 @@ function draw_3d(figure_id, angles,color) {
       steps.push(extractCoords(angles[n+1]));
       steps.push("Z");
       figures[figure_id][n].attr('d', steps.join(" "));
+      figures[figure_id][n].zIndex(z_index-1);
     }
   } else {
      for (var n=0;n<Object.keys(angles).length-1;n++) {
@@ -303,6 +315,7 @@ function draw_3d(figure_id, angles,color) {
       linePath3d.close();
       linePath3d.fill('#'+darken(color)).stroke('#'+darken(color));
       figures[figure_id][n] = linePath3d;
+      figures[figure_id][n].zIndex(z_index-1);
     }
   }
 }
