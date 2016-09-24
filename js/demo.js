@@ -190,7 +190,7 @@ $(document).ready(function(){
   });
 
   socket.on("remove_figure", function(uid) {
-    removeFigureFunction(bodies[uid].id);
+    removeFigureFromRenderer(bodies[uid].id);
     Composite.removeBody(engine.world, bodies[uid]);
   });
 
@@ -266,6 +266,12 @@ function drawbody(figure_id, angles) {
   }
   acgraph.useAbsoluteReferences(true);
   acgraph.updateReferences();
+}
+
+function removeFigureFromRenderer(id) {
+  $.each(figures[id], function(index, value) {
+      value.remove();
+  };
 }
 
 function drawwall(figure_id, angles) {
