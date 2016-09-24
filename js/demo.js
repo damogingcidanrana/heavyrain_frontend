@@ -96,7 +96,7 @@ $(document).ready(function(){
   //addFigure(4); // добавим квадрат
   //addFigure(roundRand(3,7));
   
-  for (var t=0;t<20;t++) {
+  for (var t=0;t<4;t++) {
     addFigure(roundRand(3,7));
   }
   // var namespace = '/game';
@@ -109,10 +109,12 @@ $(document).ready(function(){
   //   });
   // });
 });
-
+var centerx= 400;
+var centery = 200;
+var depth = 10;
 function draw_figure(figure_id,angles) {
   var figure_attr='';
-  if (figures[figure_id]) {
+  if (figure_id in figures && 'main' in figures[figure_id]) {
     $.each(angles, function(index, value) { 
       if (index == 0) {
         figure_attr += "M "+ angles[index].x+' '+angles[index].y+' L';
@@ -124,10 +126,13 @@ function draw_figure(figure_id,angles) {
         figure_attr += ' '+angles[index].x+' '+angles[index].y;
       }
     });
-    if (figures[figure_id].attr('d')==figure_attr) return false;
-    figures[figure_id].attr('d',figure_attr);
+    if (figures[figure_id]['main'].attr('d')==figure_attr) return false;
+    figures[figure_id]['main'].attr('d',figure_attr);
+    draw_3d(figure_id,angles);
+
   }
   else {
+    figures[figure_id]={};
     var linePath = acgraph.path();
     linePath.parent(stage);
     $.each(angles, function(index, value) {
@@ -139,9 +144,36 @@ function draw_figure(figure_id,angles) {
     });
     var color = pickRandom(colors);
     linePath.fill('#'+color);
-    linePath.stroke("#"+darken(color))
+    linePath.stroke("#"+darken(color));
     linePath.close();
-    figures[figure_id] = linePath;
+    figures[figure_id]['main'] = linePath;
+    draw_3d(figure_id,angles);
+  }
+}
+function draw_3d(figure_id,angles) {
+  var angles = Object.assign({},angles);
+  angles[Object.keys(angles).length]=angles[0];
+  if ('0' in figures[figure_id]) {
+    for (var n=0;n<Object.keys(angles).length-1;n++) {
+      var figure_attr = '';
+      figure_attr += "M "+ angles[n].x+' '+angles[n].y+' L';
+      figure_attr += ' '+(angles[n].x+(centerx-angles[n].x)/depth)+' '+(angles[n].y+(centery-angles[n].y)/depth);
+      figure_attr += ' '+(angles[n+1].x+(centerx-angles[n+1].x)/depth)+' '+(angles[n+1].y+(centery-angles[n+1].y)/depth);
+      figure_attr += ' '+angles[n+1].x+' '+angles[n+1].y+' Z';
+      figures[figure_id][n].attr('d',figure_attr);
+    }
+  } else {
+     for (var n=0;n<Object.keys(angles).length-1;n++) {
+      console.log('ggh');
+      var linePath3d = acgraph.path();
+      linePath3d.parent(stage);
+      linePath3d.moveTo(angles[n].x, angles[n].y)
+        .lineTo(angles[n].x+(centerx-angles[n].x)/depth, angles[n].y+(centery-angles[n].y)/depth)
+        .lineTo(angles[n+1].x+(centerx-angles[n+1].x)/depth, angles[n+1].y+(centery-angles[n+1].y)/depth)
+        .lineTo(angles[n+1].x, angles[n+1].y);
+      linePath3d.close();
+      figures[figure_id][n] = linePath3d;
+    }
   }
 }
 
