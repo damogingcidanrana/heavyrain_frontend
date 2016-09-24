@@ -83,7 +83,7 @@ function addFigure(angles, purpose, uid) {
   }
   World.add(engine.world, body);
 }
-var k =0;
+var k=0;
 var figures={};
 var test;
 
@@ -209,6 +209,10 @@ var center = {
 };
 var depth = 10;
 
+function fly_away(depth) {
+  figures[11]['main']
+}
+
 function extractCoords(point) {
   return [point.x.toFixed(1), point.y.toFixed(1)]
 }
@@ -224,7 +228,14 @@ function draw_figure(figure_id, angles, purpose) {
     case 'hole':
       drawhole(figure_id, angles);
       break;
+    case 'body_pushing':
+      figure_fly(figure_id, angles);
+      break;
   }
+}
+
+function figure_fly(figure_id, angles) {
+  
 }
 
 function DrawSingle(figure_id, angles, color, is3d, z_index) {
@@ -243,7 +254,7 @@ function DrawSingle(figure_id, angles, color, is3d, z_index) {
   linePath.close();
   figures[figure_id]['main'] = linePath;
   figures[figure_id]['main'].fill('#'+color);
-   figures[figure_id]['main'].zIndex(z_index);
+  figures[figure_id]['main'].zIndex(z_index);
 }
 
 function drawbody(figure_id, angles) {
@@ -279,6 +290,7 @@ function drawbody(figure_id, angles) {
 }
 
 function removeFigureFromRenderer(id) {
+
   $.each(figures[id], function(index, value) {
     value.remove();
   });
@@ -298,7 +310,7 @@ function drawhole(figure_id, angles) {
   }
 }
 
-function aim(point) {
+function aim(point, depth) {
   return [(point.x+(center.x-point.x)/depth).toFixed(1), (point.y+(center.y-point.y)/depth).toFixed(1)];
 }
 function aimAxis(point, axis) {
@@ -314,20 +326,10 @@ function draw_3d(figure_id, angles,color,z_index) {
   angles[Object.keys(angles).length]=angles[0];
   if ('0' in figures[figure_id]) {
     for (var n = 0; n < Object.keys(angles).length - 1; n++) {
-      var figure_attr = '';
-      var steps = [];
-      steps.push("M");
-      steps.push(extractCoords(angles[n]));
-      steps.push("L");
-      steps.push(aim(angles[n]));
-      steps.push(aim(angles[n+1]));
-      steps.push(extractCoords(angles[n+1]));
-      steps.push("Z");
-      figures[figure_id][n].attr('d', steps.join(" "));
-      figures[figure_id][n].zIndex(z_index-1);
+      redraw_draw3d(figure_id, angles,color,z_index);
     }
   } else {
-     for (var n=0;n<Object.keys(angles).length-1;n++) {
+    for (var n=0;n<Object.keys(angles).length-1;n++) {
       var linePath3d = acgraph.path();
       linePath3d.parent(stage);
       linePath3d.moveTo(angles[n].x.toFixed(1), angles[n].y.toFixed(1))
@@ -340,4 +342,20 @@ function draw_3d(figure_id, angles,color,z_index) {
       figures[figure_id][n].zIndex(z_index-1);
     }
   }
+}
+
+function redraw_draw3d(figure_id, angles,color,z_index) {
+  var figure_attr = '';
+  var steps = [];
+  steps.push("M");
+  steps.push(extractCoords(angles[n]));
+  steps.push("L");
+  steps.push(aim(angles[n],depth));
+  steps.push(aim(angles[n+1],depth));
+  steps.push(extractCoords(angles[n+1]));
+  steps.push("Z");
+  figures[figure_id][n].attr('d', steps.join(" "));
+  figures[figure_id][n].zIndex(z_index-1);
+}
+
 }
