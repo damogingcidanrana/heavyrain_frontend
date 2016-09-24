@@ -72,6 +72,8 @@ function addFigure(angles, purpose, uid) {
       Body.set(body, "isStatic", true);
       Body.set(body, "isSensor", true);
     }
+    var state = $("<p></p>").addClass(purpose).text(purpose + " " + uid).attr("data-uid", uid);
+    $("#states").append(state);
   }
   if (uid) {
     Body.set(body, "uid", uid);
@@ -123,6 +125,24 @@ $(document).ready(function(){
 
   })();
 
+  // UI
+  $("#states").on("click", ".body", function(){
+    $("#states").addClass("active");
+    $(this).addClass("picked");
+  });
+  $("#states").on("click", ".hole", function(){
+    var figure_uid = $("#states .body.picked").data("uid");
+    var hole_uid = $(this).data("uid");
+    console.log("TRYING:", figure_uid + " -> " + hole_uid);
+    socket.emit('put', {
+        figure_uid: figure_uid,
+        hole_uid: hole_uid
+      }
+    );
+    $("#states").removeClass("active");
+    $(".picked").remove();
+  });
+
   // for (var t=0;t<20;t++) {
   //   addFigure(roundRand(3,7));
   // }
@@ -140,6 +160,15 @@ $(document).ready(function(){
       socket.emit('start');
     }
     started = true;
+  });
+  socket.on("disconnect", function(){
+    console.log("disconnected");
+  });
+  socket.on("put_success", function(message){
+    console.log("success:", message.data);
+  });
+  socket.on("put_failed", function(message){
+    console.log("failed:", message.data);
   });
   //
   socket.on('start_game', function(data) {
