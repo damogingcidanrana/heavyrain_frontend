@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <title>Testing Matter.js</title>
     <script src="js/matter.js"></script>
-    <script src="https://code.jquery.com/jquery-3.1.0.slim.min.js"></script>
-    <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+    <script src="http://code.jquery.com/jquery-3.1.0.slim.min.js"></script>
+    <script src="http://cdn.socket.io/socket.io-1.4.5.js"></script>
     <script src="js/graphics.min.js"></script>
     <style>
       body,html {
@@ -34,16 +34,19 @@
         -o-user-select: none;
         user-select: none;
       }
-      /*canvas {
-        position: absolute;
-        top: 0;
-        left: 0;
-        opacity: 0
-      }*/
+      #fps {
+        font-family: monospace;
+        padding: 15px;
+        font-size: 16px;
+      }
+      #fps::before {
+        content: "FPS: ";
+      }
     </style>
   </head>
   <body>
     <div id="container" draggable="false"></div>
+    <div id="fps"></div>
   </body>
   <script src="js/demo.js"></script>
 </html>
