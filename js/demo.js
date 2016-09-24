@@ -98,7 +98,6 @@ $(document).ready(function(){
   (function render() {
 
 
-
     if(!lastCalledTime) {
        lastCalledTime = Date.now();
        fps = 0;
@@ -244,18 +243,21 @@ function drawbody(figure_id, angles) {
     if (figures[figure_id]['main'].attr('d') == figure_attr) return false;
     draw_3d(figure_id, angles);
     figures[figure_id]['main'].attr('d', figure_attr);
-    figures[figure_id]['main'].zIndex(Math.ceil(Math.abs(figures[figure_id]['main'].getAbsoluteX()-center.x)+Math.abs(figures[figure_id]['main'].getAbsoluteY()-center.y)));
+    figures[figure_id]['main'].zIndex(Math.ceil(Math.abs(angles[0].x+50-center.x)+Math.abs(angles[0].y+50-center.y)));
+   // figures[figure_id]['main'].zIndex(Math.ceil(Math.abs(figures[figure_id]['main'].getAbsoluteX()-center.x)+Math.abs(figures[figure_id]['main'].getAbsoluteY()-center.y)));
   } else {
     var color = pickRandom(colors);
     DrawSingle(figure_id, angles, color, true);
-    figures[figure_id]['main'].zIndex(Math.ceil(Math.abs(figures[figure_id]['main'].getAbsoluteX()-center.x)+Math.abs(figures[figure_id]['main'].getAbsoluteY()-center.y)));
+    figures[figure_id]['main'].zIndex(Math.ceil(Math.abs(angles[0].x+50-center.x)+Math.abs(angles[0].y+50-center.y)));
     figures[figure_id]['main'].stroke("#"+darken(color));
   }
+  acgraph.useAbsoluteReferences(true);
+  acgraph.updateReferences();
 }
 
 function drawwall(figure_id, angles) {
   if (!(figure_id in figures && 'main' in figures[figure_id])) {
-    DrawSingle(figure_id, angles, '00f', true);
+    DrawSingle(figure_id, angles, 'ccc', true);
     figures[figure_id]['main'].zIndex(1000);
   }
 }
@@ -299,7 +301,7 @@ function draw_3d(figure_id, angles,color) {
         .lineTo(aimAxis(angles[n+1], "x"), aimAxis(angles[n+1], "y"))
         .lineTo(angles[n+1].x.toFixed(1), angles[n+1].y.toFixed(1));
       linePath3d.close();
-      linePath3d.fill('#'+darken(color)).stroke('none');
+      linePath3d.fill('#'+darken(color)).stroke('#'+darken(color));
       figures[figure_id][n] = linePath3d;
     }
   }
