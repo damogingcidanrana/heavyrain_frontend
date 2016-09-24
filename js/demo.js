@@ -174,7 +174,11 @@ $(document).ready(function(){
 
   var namespace = '/game';
   console.log("CONNECT ATTEMPT");
-  //socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
+  if (location.href.indexOf('file') > -1) {
+    socket = io.connect('http://rain.cancode.ru' + namespace);  
+  } else {
+    socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
+  }
   var started = false;
   socket.on("connect", function(){
     if (!started) {
@@ -245,7 +249,7 @@ function draw_figure(figure_id, angles, purpose) {
 function DrawSingle(figure_id, angles, color, is3d, z_index) {
   figures[figure_id] = {};
   if (is3d) {
-    draw_3d(figure_id, angles, color, z_index);
+    draw_3d(figure_id, angles, '#'+darken(color), z_index);
   }
   var linePath = acgraph.path();
   linePath.parent(stage);
@@ -280,14 +284,13 @@ function drawbody(figure_id, angles) {
     figure_attr = steps.join(" ");
 
     if (figures[figure_id]['main'].attr('d') == figure_attr) return false;
-    draw_3d(figure_id, angles, color, z_index);
+    draw_3d(figure_id, angles, '#'+darken(color), z_index);
     figures[figure_id]['main'].attr('d', figure_attr);
-    figures[figure_id]['main'].zIndex(-Math.ceil(Math.abs(center_figure.x-center.x)+Math.abs(center_figure.y-center.y)));
-   // figures[figure_id]['main'].zIndex(Math.ceil(Math.abs(figures[figure_id]['main'].getAbsoluteX()-center.x)+Math.abs(figures[figure_id]['main'].getAbsoluteY()-center.y)));
+    figures[figure_id]['main'].zIndex(z_index);
   } else {
     var color = pickRandom(colors);
     DrawSingle(figure_id, angles, color, true, z_index);
-    figures[figure_id]['main'].zIndex(-Math.ceil(Math.abs(center_figure.x-center.x)+Math.abs(center_figure.y-center.y)));
+    figures[figure_id]['main'].zIndex(z_index);
     figures[figure_id]['main'].stroke("#"+darken(color));
   }
   acgraph.useAbsoluteReferences(true);
@@ -303,14 +306,14 @@ function removeFigureFromRenderer(id) {
 function drawwall(figure_id, angles) {
   if (!(figure_id in figures && 'main' in figures[figure_id])) {
     DrawSingle(figure_id, angles, 'ccc', false,0);
-    draw_3d(figure_id, angles,'eee',-1000);
+    draw_3d(figure_id, angles,'#eee',-1000);
   }
 }
 
 function drawhole(figure_id, angles) {
   var figure_attr = '';
   if (!(figure_id in figures && 'main' in figures[figure_id])) {
-    DrawSingle(figure_id, angles, '000', false,-1000);
+    DrawSingle(figure_id, angles, '#000', false,-1000);
   }
 }
 
@@ -351,7 +354,7 @@ function draw_3d(figure_id, angles,color,z_index) {
         .lineTo(aimAxis(angles[n+1], "x"), aimAxis(angles[n+1], "y"))
         .lineTo(angles[n+1].x.toFixed(1), angles[n+1].y.toFixed(1));
       linePath3d.close();
-      linePath3d.fill('#'+darken(color)).stroke('#'+darken(color));
+      linePath3d.fill(color).stroke(color);
       figures[figure_id][n] = linePath3d;
       figures[figure_id][n].zIndex(z_index-1);
     }
