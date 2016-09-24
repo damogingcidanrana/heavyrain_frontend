@@ -14,6 +14,11 @@ var engine = Engine.create();
 var ground = Bodies.rectangle(400, 350, 700, 5, { isStatic: true });
 var wall_left = Bodies.rectangle(50, 210, 5, 300, { isStatic: true });
 var wall_right = Bodies.rectangle(750, 210, 5, 300, { isStatic: true });
+
+Body.set(ground, "purpose", "wall");
+Body.set(wall_left, "purpose", "wall");
+Body.set(wall_right, "purpose", "wall");
+
 World.add(engine.world, [ground, wall_left, wall_right]);
 
 // bind to mouse
@@ -57,15 +62,21 @@ function darken(color) {
   return components_out.reverse().join("")
 }
 
-function addFigure(angles) {
+function addFigure(angles, purpose, uid) {
   var color = pickRandom(colors);
-  World.add(engine.world,
-    Bodies.polygon(
-      roundRand(100,700),
-      roundRand(100,200),
-      angles,
-      50
-      ));
+  var body = Bodies.polygon(roundRand(100,700), roundRand(100,200), angles, 50);
+  if (purpose) {
+    console.log("setting purpose as", purpose);
+    Body.set(body, "purpose", purpose);
+    if (purpose == "hole") {
+      Body.set(body, "isStatic", true);
+      Body.set(body, "isSensor", true);
+    }
+  }
+  if (uid) {
+    Body.set(body, "uid", uid);
+  }
+  World.add(engine.world, body);
 }
 var k =0;
 var figures={};
@@ -74,6 +85,7 @@ var test;
 var lastCalledTime;
 var fps;
 var average_fps = 0;
+var socket;
 
 $(document).ready(function(){
   $("#container")[0].width = $("#container").width();
@@ -111,20 +123,39 @@ $(document).ready(function(){
 
   })();
 
-  for (var t=0;t<20;t++) {
-    addFigure(roundRand(3,7));
-  }
+  // for (var t=0;t<20;t++) {
+  //   addFigure(roundRand(3,7));
+  // }
   // for (var t=0;t<5;t++) {
   //   addFigure(4);
   // }
-  // var namespace = '/game';
-  // var socket = io.connect('http://rain.cancode.ru' + namespace);
-  // socket.on('start_game', function(data) {
-  //   var figures = data.data.figures;
-  //   figures.forEach(function(figure){
-  //     // console.log(figure);
-  //     addFigure(figure.vertex);
-  //   });
+
+  var namespace = '/game';
+  console.log("CONNECT ATTEMPT");
+  socket = io.connect('http://rain.cancode.ru' + namespace);
+  // socket = io.connect('http://127.0.0.1:4093' + namespace);
+  var started = false;
+  socket.on("connect", function(){
+    if (!started) {
+      socket.emit('start');
+    }
+    started = true;
+  });
+  //
+  socket.on('start_game', function(data) {
+    var figures = data.data.figures;
+    var holes = data.data.holes;
+    holes.forEach(function(hole){
+      addFigure(hole.vertex, "hole", hole.uid);
+    });
+    figures.forEach(function(figure){
+      addFigure(figure.vertex, "body", figure.uid);
+    });
+  });
+
+  // var figures = data.data.figures;
+  // figures.forEach(function(figure){
+  //   addFigure(figure.vertex);
   // });
 });
 var center = {
