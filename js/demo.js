@@ -72,6 +72,9 @@ function addFigure(angles, purpose, uid) {
       Body.set(body, "isStatic", true);
       Body.set(body, "isSensor", true);
     }
+    if (purpose == "body") {
+      bodies[uid] = body;
+    }
     var state = $("<p></p>").addClass(purpose).text(purpose + " " + uid).attr("data-uid", uid);
     $("#states").append(state);
   }
@@ -88,6 +91,7 @@ var lastCalledTime;
 var fps;
 var average_fps = 0;
 var socket;
+var bodies = {};
 
 $(document).ready(function(){
   $("#container")[0].width = $("#container").width();
@@ -120,7 +124,7 @@ $(document).ready(function(){
       var body = bodies[bid];
       var object_id = body.id; // id объекта
       var vertices = body.vertices; // вертексы объкта вида [{x: 243, y: 123}, {x: 141, y: 232}, {x: 412, y: 41}, {x: 232, y: 41}]
-      draw_figure(object_id,vertices);
+      draw_figure(object_id,vertices,body.purpose);
     }
 
   })();
@@ -163,11 +167,11 @@ $(document).ready(function(){
   socket.on("disconnect", function(){
     console.log("disconnected");
   });
-  socket.on("put_success", function(message){
-    console.log("success:", message.data);
+  socket.on("put_success", function(){
+    console.log("success");
   });
-  socket.on("put_failed", function(message){
-    console.log("failed:", message.data);
+  socket.on("put_failed", function(){
+    console.log("failed");
   });
   //
   socket.on('start_game', function(data) {
@@ -179,6 +183,15 @@ $(document).ready(function(){
     figures.forEach(function(figure){
       addFigure(figure.vertex, "body", figure.uid);
     });
+  });
+
+  socket.on("new_figure", function(data) {
+    var figure = data.data.figure;
+    addFigure(figure.vertex, "body", figure.uid);
+  });
+
+  socket.on("remove_figure", function(uid) {
+    Composite.removeBody(engine.world, bodies[uid]);
   });
 
   // var figures = data.data.figures;
@@ -196,7 +209,39 @@ function extractCoords(point) {
   return [point.x.toFixed(1), point.y.toFixed(1)]
 }
 
-function draw_figure(figure_id, angles) {
+function draw_figure(figure_id, angles, purpose) {
+  switch (purpose) {
+    case 'body':
+      drawbody(figure_id, angles);
+      break;
+    case 'wall':
+      drawwall(figure_id, angles);
+      break;
+    case 'hole':
+      drawhole(figure_id, angles);
+      break;
+  }
+}
+
+function DrawSingle(figure_id, angles, color, is3d) {
+  figures[figure_id] = {};
+  if (is3d) {
+    draw_3d(figure_id,angles,color);
+  }
+  var linePath = acgraph.path();
+  linePath.parent(stage);
+  $.each(angles, function(index, value) {
+    if (index == 0) { linePath.moveTo(value.x, value.y); }
+               else { linePath.lineTo(value.x, value.y); }
+  });
+  linePath.fill('#'+color);
+  linePath.stroke("#"+darken(color));
+  linePath.close();
+  figures[figure_id]['main'] = linePath;
+  figures[figure_id]['main'].fill('#'+color);
+}
+
+function drawbody(figure_id, angles) {
   var figure_attr = '';
   if (figure_id in figures && 'main' in figures[figure_id]) {
     var steps = [];
@@ -213,21 +258,25 @@ function draw_figure(figure_id, angles) {
     figures[figure_id]['main'].attr('d', figure_attr);
     figures[figure_id]['main'].zIndex(Math.ceil(Math.abs(figures[figure_id]['main'].getAbsoluteX()-center.x)+Math.abs(figures[figure_id]['main'].getAbsoluteY()-center.y)));
   } else {
-    figures[figure_id] = {};
     var color = pickRandom(colors);
-    draw_3d(figure_id,angles,color);
-    var linePath = acgraph.path();
-    linePath.parent(stage);
-    $.each(angles, function(index, value) {
-      if (index == 0) { linePath.moveTo(value.x, value.y); }
-                 else { linePath.lineTo(value.x, value.y); }
-    });
-    linePath.fill('#'+color);
-    linePath.stroke("#"+darken(color));
-    linePath.close();
-    linePath.zIndex(Math.ceil(Math.abs(linePath.getAbsoluteX()-center.x)+Math.abs(linePath.getAbsoluteY()-center.y)));
-    figures[figure_id]['main'] = linePath;
+    DrawSingle(figure_id, angles, color, true);
+    figures[figure_id]['main'].zIndex(Math.ceil(Math.abs(figures[figure_id]['main'].getAbsoluteX()-center.x)+Math.abs(figures[figure_id]['main'].getAbsoluteY()-center.y)));
+    figures[figure_id]['main'].stroke("#"+darken(color));
+  }
+}
 
+function drawwall(figure_id, angles) {
+  if (!(figure_id in figures && 'main' in figures[figure_id])) {
+    DrawSingle(figure_id, angles, '00f', true);
+    figures[figure_id]['main'].zIndex(1000);
+  }
+}
+
+function drawhole(figure_id, angles) {
+  var figure_attr = '';
+  if (!(figure_id in figures && 'main' in figures[figure_id])) {
+    DrawSingle(figure_id, angles, '000', false);
+    figures[figure_id]['main'].zIndex(-1);
   }
 }
 
